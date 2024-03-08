@@ -1,0 +1,5 @@
+BOT_TOKEN = "7062094702:AAE8Qj0tmQQEobuWi75ZlIgknGNgEoncOoY"
+DATABASE_NAME = "zahradebar"
+DATABASE_USER = "zahradebaruser"
+DATABASE_PASSWORD = "Z@hra1382"
+DATABASE_HOST = "localhost"
