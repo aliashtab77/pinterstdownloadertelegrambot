@@ -29,7 +29,7 @@ def check_admin(userid):
     return str(userid) in admins
 
 keybord_markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-keybord_markup.add("آمار و گزارش کاربران", "اضافه کردن ادمین", "فوروارد همگانی", "بخش تبلیغات","افزودن کانال قفل")
+keybord_markup.add("📈 آمار و گزارش کاربران", "🆔 اضافه کردن ادمین", "📍فوروارد همگانی", "💠 بخش تبلیغات","🔐افزودن کانال قفل", "give photo")
 
 button1 = InlineKeyboardButton("اضافه کردن تبلیغات", callback_data="addads")
 button2 = InlineKeyboardButton("حدف کردن تبلیغات", callback_data="delads")
@@ -42,7 +42,7 @@ markup1.add(button3)
 @bot.callback_query_handler(func=lambda call:True)
 def callback_query(call):
     if call.data == "addads":
-        msg = bot.send_message(call.message.chat.id, "متن تبلیغات مورد نظر خود را اضافه کنید")
+        msg = bot.send_message(call.message.chat.id, "تبلیغ خود را ارسال نمایید")
         bot.register_next_step_handler(msg, addadsfunc)
     elif call.data == "delads":
         with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
@@ -65,15 +65,18 @@ def callback_query(call):
                     channels.append(i[0])
 
         if check_join(call.message.chat.id, channels):
-            bot.send_message(call.message.chat.id, "برای دانلود عکس یا فیلم از پینترست لطفا لینک خود را ارسال کنید")
+            bot.send_message(call.message.chat.id, "🔗 برای دانلود عکس یا فیلم از پینترست لطفا لینک خود را ارسال کنید")
         else:
             x = ""
             for i in channels:
                 x += i
                 x += "\n"
             else:
-                bot.send_message(call.message.chat.id, f"برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}",
+                bot.send_message(call.message.chat.id, f"🔒 برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}",
                                  reply_markup=markup1)
+
+
+
 
 
 
@@ -90,7 +93,7 @@ def send_welcome(message):
         pass
 
     if check_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, "سلام ادمین عزیز امیدوارم روز خوبی داشته باشی چه کاری از من برات بر میاد", reply_markup=keybord_markup)
+        bot.send_message(message.from_user.id, "🗝 سلام ادمین عزیز امیدوارم روز خوبی داشته باشی چه کاری از من برات بر میاد", reply_markup=keybord_markup)
     else:
         channels = []
         with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
@@ -102,18 +105,18 @@ def send_welcome(message):
                     channels.append(i[0])
 
         if check_join(message.from_user.id, channels):
-            bot.send_message(message.from_user.id, "برای دانلود عکس یا فیلم از پینترست لطفا لینک خود را ارسال کنید")
+            bot.send_message(message.from_user.id, "🔗 برای دانلود عکس یا فیلم از پینترست لطفا لینک خود را ارسال کنید")
         else:
             x = ""
             for i in channels:
                 x += i
                 x += "\n"
             else:
-                bot.send_message(message.from_user.id, f"برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}", reply_markup=markup1)
+                bot.send_message(message.from_user.id, f"🔒 برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}", reply_markup=markup1)
 
 @bot.message_handler()
 def handle_message(message):
-    if message.text == "آمار و گزارش کاربران":
+    if message.text == "📈 آمار و گزارش کاربران":
         x = ""
         with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD, host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
             with connection.cursor() as cursor:
@@ -122,18 +125,18 @@ def handle_message(message):
                 for i in cursor:
                     x = i[0]
         bot.send_message(message.from_user.id, f"تعداد کاربران ربات در این لحظه {x} نفر می باشد")
-    elif message.text == "اضافه کردن ادمین":
+    elif message.text == "🆔 اضافه کردن ادمین":
         msg = bot.send_message(message.from_user.id, "آیدی فرد مورد نظر را وارد کنید")
         bot.register_next_step_handler(msg, admin_adder)
 
-    elif message.text == "فوروارد همگانی":
+    elif message.text == "📍فوروارد همگانی":
         msg = bot.send_message(message.from_user.id, "متن پیام مورد نظر برای اطلاع رسانی به تمام اعضای فعال ربات را وارد نمایید")
         bot.register_next_step_handler(msg, forwardmeassg)
-    elif message.text == "افزودن کانال قفل":
+    elif message.text == "🔐افزودن کانال قفل":
         msg = bot.send_message(message.from_user.id, "لطفا بعد از اطمینان حاصل کردن از ادمین بودن ربات در کانال مورد نظر یوزر نیم کانال را بدون @ ارسال نمایید")
         bot.register_next_step_handler(msg, kanalgof)
 
-    elif message.text == "بخش تبلیغات":
+    elif message.text == "💠 بخش تبلیغات":
         bot.send_message(message.from_user.id, "یکی از گزینه های زیر را انتخاب نمایید", reply_markup=markup)
     else:
         channels = []
@@ -160,9 +163,18 @@ def handle_message(message):
                             sql = f"SELECT * FROM ads"
                             cursor.execute(sql)
                             for i in cursor:
-                                bot.send_message(message.from_user.id, f"{i[1]}")
+                                if i[2] == "1":
+                                    with open(i[3], 'rb') as sendfilename:
+                                        bot.send_photo(message.from_user.id, sendfilename, caption=i[1])
+
+                                elif i[2] == "2":
+                                    with open(i[3], 'rb') as sendfilename:
+                                        bot.send_video(message.from_user.id, sendfilename, caption=i[1])
+
+                                else:
+                                    bot.send_message(message.from_user.id, i[1])
                 else:
-                    bot.send_message(message.from_user.id, "لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
+                    bot.send_message(message.from_user.id, " ❗️ لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
 
             elif message.text.startswith('https://www.pinterest.com/'):
                 njd = get_download_url(message.text)
@@ -178,16 +190,25 @@ def handle_message(message):
                             sql = f"SELECT * FROM ads"
                             cursor.execute(sql)
                             for i in cursor:
-                                bot.send_message(message.from_user.id, f"{i[1]}")
+                                if i[2] == "1":
+                                    with open(i[3], 'rb') as sendfilename:
+                                        bot.send_photo(message.from_user.id, sendfilename, caption=i[1])
+
+                                elif i[2] == "2":
+                                    with open(i[3], 'rb') as sendfilename:
+                                        bot.send_video(message.from_user.id, sendfilename, caption=i[1])
+
+                                else:
+                                    bot.send_message(message.from_user.id, i[1])
 
                                  
                 else:
-                    bot.send_message(message.from_user.id, "لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
+                    bot.send_message(message.from_user.id, "❗️ لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
 
 
 
             else:
-                bot.send_message(message.from_user.id, "لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
+                bot.send_message(message.from_user.id, "❗️ لینک شما نامعتبر است لطفا دوباره با دقت بیشتر تلاش کنید")
 
         else:
             x = ""
@@ -195,7 +216,7 @@ def handle_message(message):
                 x += i
                 x += "\n"
             else:
-                bot.send_message(message.from_user.id, f"برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}",
+                bot.send_message(message.from_user.id, f"❗️ برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}",
                                  reply_markup=markup1)
 
 
@@ -219,7 +240,7 @@ def admin_adder(message):
                 sql = f"INSERT INTO admin (id) VALUES ('{message.text}')"
                 cursor.execute(sql)
                 connection.commit()
-        bot.send_message(message.from_user.id, "کاربر مورد نظر شما به لیست ادمین ها افزوده شد")
+        bot.send_message(message.from_user.id, "✅ کاربر مورد نظر شما به لیست ادمین ها افزوده شد")
     except:
         bot.send_message(message.from_user.id, "کاربر مورد نظر شما از قبل عضوی از لیست ادمین ها می باشد لطفا دوباره اقدام نفرمایید")
 
@@ -234,7 +255,7 @@ def forwardmeassg(message):
                 except:
                     continue
 
-    bot.reply_to(message, "ارسال این پیام به تمامی کاربران با موفقیت انجام شد")
+    bot.reply_to(message, "✅ ارسال این پیام به تمامی کاربران با موفقیت انجام شد")
 
 
 def kanalgof(message):
@@ -247,7 +268,7 @@ def kanalgof(message):
                     sql = f"INSERT INTO channel (id) VALUES ('@{message.text}')"
                     cursor.execute(sql)
                     connection.commit()
-            bot.send_message(message.from_user.id, "کانال با موفقیت به لیست کانال های قفل شده افزوده شد")
+            bot.send_message(message.from_user.id, "کانال با موفقیت به لیست کانال های قفل شده افزوده شد ✅")
         except:
             bot.send_message(message.from_user.id, "کانال از قبل جزو لیست کانال های قفل شده می باشد لطفا دوباره اقدام نکنید")
     except:
@@ -255,14 +276,45 @@ def kanalgof(message):
 
 
 def addadsfunc(message):
-    with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
-                                         host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
-        with connection.cursor() as cursor:
-            sql = f"INSERT INTO ads (matn) VALUES ('{message.text}')"
-            cursor.execute(sql)
-            connection.commit()
+    if message.content_type == "photo":
+        photo_file_id = message.photo[-1].file_id
+        file_info = bot.get_file(photo_file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        with open(f'{file_info.file_unique_id}.jpg', 'wb') as new_file:
+            new_file.write(downloaded_file)
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD, host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"INSERT INTO ads (matn , isphoto, addres) VALUES ('{message.caption}' , '1', '{file_info.file_unique_id}.jpg')"
+                cursor.execute(sql)
+                connection.commit()
 
-    bot.send_message(message.from_user.id, "تبلیغات مورد نظر شما با موفقیت اضافه شد")
+    elif message.content_type == "video":
+        video_file_id = message.video.file_id
+        # Download the video
+        file_info = bot.get_file(video_file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        # Save the video to a file
+        with open(f'{file_info.file_unique_id}.mp4', 'wb') as new_file:
+            new_file.write(downloaded_file)
+
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD, host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"INSERT INTO ads (matn , isphoto, addres) VALUES ('{message.caption}' , '2', '{file_info.file_unique_id}.mp4')"
+                cursor.execute(sql)
+                connection.commit()
+
+    else:
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD, host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"INSERT INTO ads (matn , isphoto, addres) VALUES ('{message.text}' , '0', 'only text')"
+                cursor.execute(sql)
+                connection.commit()
+
+
+
+
+
+    bot.send_message(message.from_user.id, "تبلیغات مورد نظر شما با موفقیت اضافه شد ✅")
 
 
 
@@ -286,9 +338,9 @@ def deladdfunc(message):
                 cursor.execute(sql)
                 connection.commit()
 
-        bot.send_message(message.from_user.id, "حدف تبلیغ مورد نظر با موفقیت انجام شد")
+        bot.send_message(message.from_user.id, "حذف تبلیغ مورد نظر با موفقیت انجام شد ✅")
 
     except:
-        bot.send_message(message.from_user.id, "ایدی وارد شده صحیح نمی باشد لطفا مجددا اقدام فرمایید")
+        bot.send_message(message.from_user.id, "ایدی وارد شده صحیح نمی باشد لطفا مجددا اقدام فرمایید! ❌ ")
 
 bot.infinity_polling()
