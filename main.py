@@ -29,7 +29,7 @@ def check_admin(userid):
     return str(userid) in admins
 
 keybord_markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-keybord_markup.add("📈 آمار و گزارش کاربران", "🆔 اضافه کردن ادمین", "📍فوروارد همگانی", "💠 بخش تبلیغات","🔐افزودن کانال قفل", "give photo")
+keybord_markup.add("📈 آمار و گزارش کاربران", "🆔 اضافه کردن ادمین", "📍فوروارد همگانی", "💠 بخش تبلیغات","🔐افزودن کانال قفل", "حدف کانال قفل")
 
 button1 = InlineKeyboardButton("اضافه کردن تبلیغات", callback_data="addads")
 button2 = InlineKeyboardButton("حدف کردن تبلیغات", callback_data="delads")
@@ -74,9 +74,33 @@ def callback_query(call):
             else:
                 bot.send_message(call.message.chat.id, f"🔒 برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}",
                                  reply_markup=markup1)
+    elif call.data == "removeadmin":
+        if call.message.chat.id in config.SUPER_USERS:
+            with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                         host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+                with connection.cursor() as cursor:
+                    sql = f"SELECT * FROM admin "
+                    cursor.execute(sql)
+                    for i in cursor:
+                        if int(i[0]) not in config.SUPER_USERS:
+                            bot.send_message(call.message.chat.id, f"{i[0]}")
+            msg = bot.send_message(call.message.chat.id,
+                                   "ایدی فرد مورد نظر را وارد کنید")
+            bot.register_next_step_handler(msg, deladmin)
 
 
 
+
+
+
+
+
+
+
+
+
+        else:
+            bot.send_message(call.message.chat.id, "شما به این بخش دسترسی ندارید")
 
 
 
@@ -114,6 +138,32 @@ def send_welcome(message):
             else:
                 bot.send_message(message.from_user.id, f"🔒 برای استفاده از ربات باید در کانال های زیر عضو شوید:\n{x}", reply_markup=markup1)
 
+
+
+
+
+
+button11 = InlineKeyboardButton("حدف ادمین", callback_data="removeadmin")
+markup11 = InlineKeyboardMarkup()
+markup11.add(button11)
+
+
+
+@bot.message_handler(commands=['superuser'])
+def superuser(message):
+    if message.from_user.id in config.SUPER_USERS:
+        bot.send_message(message.from_user.id, "سلام ادمین ویژه برای مشاهده و حدف لیست ادمین ها روی دکمه زیر کلیک فرمایید", reply_markup=markup11)
+
+
+    else:
+        bot.send_message(message.from_user.id, "شما به این قسمت دسترسی ندارید")
+
+
+
+
+
+
+
 @bot.message_handler()
 def handle_message(message):
     if message.text == "📈 آمار و گزارش کاربران":
@@ -128,6 +178,33 @@ def handle_message(message):
     elif message.text == "🆔 اضافه کردن ادمین":
         msg = bot.send_message(message.from_user.id, "آیدی فرد مورد نظر را وارد کنید")
         bot.register_next_step_handler(msg, admin_adder)
+
+
+
+    elif message.text == "حدف کانال قفل":
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                     host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"SELECT * FROM channel "
+                cursor.execute(sql)
+                for i in cursor:
+                    bot.send_message(message.chat.id, f"{i[0]}")
+        msg = bot.send_message(message.chat.id, "ای دی کانال مورد نظر برای حدف را از لیست زیر انتخاب کرده و آن را برای حدف ارسال نمایید")
+        bot.register_next_step_handler(msg,delchanellghofl)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     elif message.text == "📍فوروارد همگانی":
         msg = bot.send_message(message.from_user.id, "متن پیام مورد نظر برای اطلاع رسانی به تمام اعضای فعال ربات را وارد نمایید")
@@ -233,6 +310,7 @@ def handle_message(message):
 
 
 
+
 def admin_adder(message):
     try:
         with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD, host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
@@ -315,6 +393,60 @@ def addadsfunc(message):
 
 
     bot.send_message(message.from_user.id, "تبلیغات مورد نظر شما با موفقیت اضافه شد ✅")
+
+def deladmin(message):
+    try:
+        admins = []
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                     host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"SELECT * FROM admin"
+                cursor.execute(sql)
+                for i in cursor:
+                    admins.append(str(i[0]))
+
+        if message.text not in admins or int(message.text) in config.SUPER_USERS:
+            raise ValueError("ridi")
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                         host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"DELETE FROM admin WHERE id = '{message.text}'"
+                cursor.execute(sql)
+                connection.commit()
+
+        bot.send_message(message.from_user.id, "حذف ادمین مورد نظر با موفقیت انجام شد ✅")
+
+    except:
+        bot.send_message(message.from_user.id, "ایدی وارد شده صحیح نمی باشد لطفا مجددا اقدام فرمایید! ❌ ")
+
+
+
+def delchanellghofl(message):
+    try:
+        chanells = []
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                     host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"SELECT * FROM channel "
+                cursor.execute(sql)
+                for i in cursor:
+                    chanells.append(i[0])
+
+        if message.text not in chanells:
+            raise ValueError("ridi")
+        with mysql.connector.connect(user=config.DATABASE_USER, password=config.DATABASE_PASSWORD,
+                                         host=config.DATABASE_HOST, database=config.DATABASE_NAME) as connection:
+            with connection.cursor() as cursor:
+                sql = f"DELETE FROM channel WHERE id = '{message.text}'"
+                cursor.execute(sql)
+                connection.commit()
+
+        bot.send_message(message.from_user.id, "حذف کانال قفل مورد نظر با موفقیت انجام شد ✅")
+
+    except:
+        bot.send_message(message.from_user.id, "ایدی وارد شده صحیح نمی باشد لطفا مجددا اقدام فرمایید! ❌ ")
+
+
 
 
 
